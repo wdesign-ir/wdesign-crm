@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0d0d14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wdesign CRM">
+<title>Wdesign CRM</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d14;--surface:#161525;--border:#1e1d2e;
+  --purple:#7c3aed;--purple-dim:#5b21b6;
+  --text:#e2e0f0;--muted:#666;--faint:#333;
+  --new:#a78bfa;--consulted:#60a5fa;--followup:#fbbf24;--won:#34d399;--lost:#f87171;
+}
+body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input,textarea,select{font-family:inherit;direction:rtl}
+
+/* HEADER */
+.header{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg);z-index:10;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.logo{font-size:11px;letter-spacing:3px;color:var(--purple);font-weight:700;text-transform:uppercase}
+.page-title{font-size:19px;font-weight:700;color:#f0eeff;margin-top:2px}
+.add-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple-dim));color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px #7c3aed55;transition:transform .15s}
+.add-btn:active{transform:scale(.9)}
+
+/* STATS */
+.stats-row{display:flex;gap:8px;padding:12px 16px 4px}
+.stat-box{flex:1;border-radius:12px;padding:10px 8px;text-align:center}
+.stat-num{font-size:20px;font-weight:700}
+.stat-lbl{font-size:9px;color:var(--muted);margin-top:2px}
+.stat-purple{background:#7c3aed11;border:1px solid #7c3aed22}.stat-purple .stat-num{color:var(--new)}
+.stat-green{background:#34d39911;border:1px solid #34d39922}.stat-green .stat-num{color:var(--won)}
+.stat-yellow{background:#fbbf2411;border:1px solid #fbbf2422}.stat-yellow .stat-num{color:var(--followup)}
+
+/* FILTER */
+.filter-bar{display:flex;gap:7px;padding:12px 16px 6px;overflow-x:auto;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.chip{padding:5px 13px;border-radius:20px;font-size:11px;border:1px solid var(--border);color:var(--muted);white-space:nowrap;transition:all .2s}
+.chip.active-new{border-color:var(--new);background:#a78bfa22;color:var(--new)}
+.chip.active-consulted{border-color:var(--consulted);background:#60a5fa22;color:var(--consulted)}
+.chip.active-followup{border-color:var(--followup);background:#fbbf2422;color:var(--followup)}
+.chip.active-won{border-color:var(--won);background:#34d39922;color:var(--won)}
+.chip.active-lost{border-color:var(--lost);background:#f8717122;color:var(--lost)}
+.chip.active-all{border-color:var(--purple);background:#7c3aed22;color:var(--new)}
+
+/* CARDS */
+.leads-list{padding:4px 12px 80px}
+.lead-card{border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:transform .15s;border:1px solid transparent}
+.lead-card:active{transform:scale(.98)}
+.lead-card.s-new{background:#1e1333;border-color:#a78bfa22}
+.lead-card.s-consulted{background:#0f1e33;border-color:#60a5fa22}
+.lead-card.s-followup{background:#1f1a0e;border-color:#fbbf2422}
+.lead-card.s-won{background:#0a1f17;border-color:#34d39922}
+.lead-card.s-lost{background:#1f0f0f;border-color:#f8717122}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card-name{font-size:15px;font-weight:600;color:#f0eeff}
+.card-phone{font-size:12px;color:var(--muted);margin-top:2px;direction:ltr;text-align:right}
+.badge{font-size:10px;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.badge-new{background:#a78bfa22;color:var(--new);border:1px solid #a78bfa44}
+.badge-consulted{background:#60a5fa22;color:var(--consulted);border:1px solid #60a5fa44}
+.badge-followup{background:#fbbf2422;color:var(--followup);border:1px solid #fbbf2444}
+.badge-won{background:#34d39922;color:var(--won);border:1px solid #34d39944}
+.badge-lost{background:#f8717122;color:var(--lost);border:1px solid #f8717144}
+.card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;font-size:11px;color:var(--muted)}
+.card-meta span{display:flex;align-items:center;gap:3px}
+.reminder-tag{color:var(--followup)!important}
+.reminder-tag.overdue{color:var(--lost)!important}
+.note-count{color:#7c3aed99}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--faint)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* FORM */
+.page{padding:20px;animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.back-btn{color:var(--purple);font-size:14px;margin-bottom:18px;display:flex;align-items:center;gap:5px}
+.page-heading{font-size:18px;font-weight:700;margin-bottom:20px;color:#f0eeff}
+.field-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:block}
+.field-input{width:100%;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;margin-bottom:14px;outline:none;transition:border-color .2s}
+.field-input:focus{border-color:var(--purple)}
+.field-input.ltr{direction:ltr;text-align:left}
+textarea.field-input{resize:none;min-height:75px}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.status-opt{padding:10px;border-radius:10px;border:1px solid var(--border);color:var(--muted);font-size:12px;text-align:center;transition:all .2s}
+.status-opt.sel-new{border-color:var(--new);background:#a78bfa22;color:var(--new)}
+.status-opt.sel-consulted{border-color:var(--consulted);background:#60a5fa22;color:var(--consulted)}
+.status-opt.sel-followup{border-color:var(--followup);background:#fbbf2422;color:var(--followup)}
+.status-opt.sel-won{border-color:var(--won);background:#34d39922;color:var(--won)}
+.status-opt.sel-lost{border-color:var(--lost);background:#f8717122;color:var(--lost)}
+.submit-btn{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--purple-dim));color:#fff;font-size:15px;font-weight:700;margin-top:4px;box-shadow:0 4px 20px #7c3aed44;transition:opacity .2s}
+.submit-btn:active{opacity:.85}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.notes-list{margin-bottom:10px}
+.note-item{background:var(--surface);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13px;color:#ccc;border-right:3px solid var(--purple)}
+.note-time{font-size:10px;color:#444;margin-top:4px}
+.note-row{display:flex;gap:8px}
+.note-inp{flex:1;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;outline:none}
+.note-inp:focus{border-color:var(--purple)}
+.send-btn{padding:10px 16px;background:var(--purple);border-radius:10px;color:#fff;font-size:16px}
+.delete-btn{width:100%;padding:12px;border-radius:12px;background:transparent;border:1px solid #f8717133;color:var(--lost);font-size:13px;margin-top:18px}
+.notif-btn{width:100%;padding:11px;border-radius:12px;background:#fbbf2411;border:1px solid #fbbf2433;color:var(--followup);font-size:13px;margin-bottom:8px}
+.reminder-info{font-size:12px;color:var(--followup);margin-top:-10px;margin-bottom:14px}
+.reminder-info.overdue{color:var(--lost)}
+.section-label{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+
+/* notification permission banner */
+.notif-banner{margin:8px 12px;padding:10px 14px;background:#fbbf2411;border:1px solid #fbbf2433;border-radius:12px;font-size:12px;color:var(--followup);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.notif-banner button{background:var(--followup);color:#000;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600}
+.header-btns{display:flex;gap:8px;align-items:center}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:#1e1d2e;color:#888;font-size:16px;display:flex;align-items:center;justify-content:center}
+.exp-btn{width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;margin-bottom:9px;display:flex;align-items:center;gap:12px;text-align:right}
+.exp-btn:active{opacity:.8}
+.exp-json{border-color:#7c3aed44;color:#a78bfa}
+.exp-csv{border-color:#34d39944;color:#34d399}
+.exp-obs{border-color:#a78bfa44;color:#c4b5fd}
+.exp-note{border-color:#60a5fa44;color:#60a5fa}
+.exp-import{border-color:#fbbf2444;color:#fbbf24}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ── Jalali Conversion ──────────────────────────────────────────────
+function toJalali(gy,gm,gd){
+  var g_d_no,j_d_no,j_np,i,j_y,j_m,j_d,jy,jm,jd;
+  var g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31];
+  var j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29];
+  gy-=1600;gm--;gd--;
+  g_d_no=365*gy+parseInt((gy+3)/4)-parseInt((gy+99)/100)+parseInt((gy+399)/400);
+  for(i=0;i<gm;i++)g_d_no+=g_days_in_month[i];
+  if(gm>1&&((gy%4==0&&gy%100!=0)||(gy%400==0)))g_d_no++;
+  g_d_no+=gd;
+  j_d_no=g_d_no-79;
+  j_np=parseInt(j_d_no/12053);j_d_no%=12053;
+  jy=979+33*j_np+4*parseInt(j_d_no/1461);
+  j_d_no%=1461;
+  if(j_d_no>=366){jy+=parseInt((j_d_no-1)/365);j_d_no=(j_d_no-1)%365;}
+  for(i=0;i<11&&j_d_no>=j_days_in_month[i];i++)j_d_no-=j_days_in_month[i];
+  jm=i+1;jd=j_d_no+1;
+  return[jy,jm,jd];
+}
+
+function formatJalaliDate(isoStr){
+  if(!isoStr)return'—';
+  var d=new Date(isoStr);
+  var j=toJalali(d.getFullYear(),d.getMonth()+1,d.getDate());
+  var months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  var h=d.getHours().toString().padStart(2,'0');
+  var m=d.getMinutes().toString().padStart(2,'0');
+  return j[2]+' '+months[j[1]-1]+' '+j[0]+' — '+h+':'+m;
+}
+
+function formatJalaliShort(isoStr){
+  if(!isoStr)return'';
+  var d=new Date(isoStr);
+  var j=toJalali(d.getFullYear(),d.getMonth()+1,d.getDate());
+  var h=d.getHours().toString().padStart(2,'0');
+  var m=d.getMinutes().toString().padStart(2,'0');
+  return j[2]+'/'+(j[1]<10?'0':'')+j[1]+'/'+j[0]+' '+h+':'+m;
+}
+
+function getReminderDiff(isoStr){
+  if(!isoStr)return null;
+  var diff=new Date(isoStr)-new Date();
+  if(diff<0)return{text:'⚠ گذشته',overdue:true};
+  var h=Math.floor(diff/3600000);
+  var m=Math.floor((diff%3600000)/60000);
+  if(h>48)return{text:'📅 '+Math.floor(h/24)+' روز دیگر',overdue:false};
+  if(h>0)return{text:'⏰ '+h+'h '+m+'m دیگر',overdue:false};
+  return{text:'⏰ '+m+' دقیقه دیگر',overdue:false};
+}
+
+// ── Storage ────────────────────────────────────────────────────────
+var KEY='wdesign_crm_v2';
+function loadLeads(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):[]}catch{return[]}}
+function saveLeads(l){try{localStorage.setItem(KEY,JSON.stringify(l))}catch{}}
+
+// ── Status Config ─────────────────────────────────────────────────
+var STATUS={
+  new:{label:'لید جدید',badge:'badge-new',card:'s-new',sel:'sel-new'},
+  consulted:{label:'مشاوره شد',badge:'badge-consulted',card:'s-consulted',sel:'sel-consulted'},
+  followup:{label:'پیگیری لازم',badge:'badge-followup',card:'s-followup',sel:'sel-followup'},
+  won:{label:'بسته شد ✓',badge:'badge-won',card:'s-won',sel:'sel-won'},
+  lost:{label:'بسته شد ✗',badge:'badge-lost',card:'s-lost',sel:'sel-lost'}
+};
+
+// ── Notification ──────────────────────────────────────────────────
+function requestNotifPerm(cb){
+  if(!('Notification' in window)){alert('مرورگر شما از نوتیفیکیشن پشتیبانی نمیکنه');return;}
+  Notification.requestPermission().then(function(p){if(cb)cb(p);render();});
+}
+function scheduleNotif(lead){
+  if(!lead.reminder)return;
+  var delay=new Date(lead.reminder)-new Date();
+  if(delay<=0)return;
+  if(Notification.permission==='granted'){
+    setTimeout(function(){
+      new Notification('⏰ Wdesign CRM',{body:'پیگیری: '+lead.name+' — '+lead.phone,icon:'icon-192.png'});
+    },delay);
+  }
+}
+
+// ── App State ──────────────────────────────────────────────────────
+var state={
+  leads:loadLeads(),
+  view:'list',
+  filter:'all',
+  selectedId:null,
+  form:{name:'',phone:'',note:'',status:'new',reminder:''},
+  noteInput:''
+};
+
+function getLead(id){return state.leads.find(function(l){return l.id===id});}
+
+function addLead(){
+  var f=state.form;
+  if(!f.name.trim()||!f.phone.trim())return;
+  var lead={
+    id:Date.now(),
+    name:f.name.trim(),
+    phone:f.phone.trim(),
+    status:f.status,
+    notes:f.note.trim()?[{text:f.note.trim(),time:new Date().toISOString()}]:[],
+    reminder:f.reminder||null,
+    reminderFired:false,
+    createdAt:new Date().toISOString()
+  };
+  state.leads.unshift(lead);
+  saveLeads(state.leads);
+  if(lead.reminder)scheduleNotif(lead);
+  state.form={name:'',phone:'',note:'',status:'new',reminder:''};
+  state.view='list';
+  render();
+}
+
+function updateStatus(id,status){
+  state.leads=state.leads.map(function(l){return l.id===id?Object.assign({},l,{status:status}):l;});
+  saveLeads(state.leads);
+  render();
+}
+
+function setReminder(id,reminder){
+  state.leads=state.leads.map(function(l){
+    if(l.id===id){var u=Object.assign({},l,{reminder:reminder,reminderFired:false});scheduleNotif(u);return u;}
+    return l;
+  });
+  saveLeads(state.leads);
+  render();
+}
+
+function addNote(id){
+  var text=state.noteInput.trim();
+  if(!text)return;
+  var note={text:text,time:new Date().toISOString()};
+  state.leads=state.leads.map(function(l){
+    return l.id===id?Object.assign({},l,{notes:(l.notes||[]).concat(note)}):l;
+  });
+  saveLeads(state.leads);
+  state.noteInput='';
+  render();
+}
+
+function deleteLead(id){
+  if(!confirm('این لید حذف بشه؟'))return;
+  state.leads=state.leads.filter(function(l){return l.id!==id;});
+  saveLeads(state.leads);
+  state.view='list';
+  state.selectedId=null;
+  render();
+}
+
+// ── Export / Import ───────────────────────────────────────────────
+function downloadFile(content,filename,type){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:type}));
+  a.download=filename;
+  a.click();
+}
+
+function exportJSON(){
+  downloadFile(JSON.stringify(state.leads,null,2),'wdesign-crm-backup.json','application/json');
+}
+
+function exportCSV(){
+  var rows=[['نام','تلفن','وضعیت','تاریخ ثبت','یادآوری','یادداشت‌ها']];
+  state.leads.forEach(function(l){
+    rows.push([
+      l.name,
+      l.phone,
+      STATUS[l.status]?STATUS[l.status].label:l.status,
+      formatJalaliDate(l.createdAt),
+      l.reminder?formatJalaliDate(l.reminder):'',
+      (l.notes||[]).map(function(n){return n.text;}).join(' | ')
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  downloadFile('\uFEFF'+csv,'wdesign-crm.csv','text/csv;charset=utf-8');
+}
+
+function exportObsidian(){
+  var md=state.leads.map(function(l){
+    var notes=(l.notes||[]).map(function(n){return'  - '+n.text+' _('+formatJalaliDate(n.time)+')_';}).join('\n');
+    return '## '+l.name+'\n- 📞 [['+l.phone+']]\n- وضعیت: '+STATUS[l.status].label+'\n- ثبت: '+formatJalaliDate(l.createdAt)+(l.reminder?'\n- ⏰ پیگیری: '+formatJalaliDate(l.reminder):'')+'\n### یادداشت‌ها\n'+(notes||'  - —');
+  }).join('\n\n---\n\n');
+  downloadFile('# Wdesign CRM\n\n'+md,'wdesign-crm.md','text/markdown');
+}
+
+function exportAppleNotes(){
+  var txt=state.leads.map(function(l){
+    var notes=(l.notes||[]).map(function(n){return'    • '+n.text;}).join('\n');
+    return l.name+'\nتلفن: '+l.phone+'\nوضعیت: '+STATUS[l.status].label+'\nثبت: '+formatJalaliDate(l.createdAt)+(l.reminder?'\nپیگیری: '+formatJalaliDate(l.reminder):'')+'\nیادداشت‌ها:\n'+(notes||'    • —');
+  }).join('\n\n────────────\n\n');
+  downloadFile('Wdesign CRM\n\n'+txt,'wdesign-crm-notes.txt','text/plain;charset=utf-8');
+}
+
+function importJSON(){
+  var inp=document.createElement('input');
+  inp.type='file';inp.accept='.json';
+  inp.onchange=function(e){
+    var file=e.target.files[0];
+    if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var data=JSON.parse(ev.target.result);
+        if(!Array.isArray(data))throw new Error();
+        if(!confirm('این عملیات '+data.length+' لید رو import میکنه. ادامه بدم؟'))return;
+        state.leads=data;
+        saveLeads(state.leads);
+        state.view='list';
+        render();
+        alert('✅ '+data.length+' لید با موفقیت import شد');
+      }catch{alert('❌ فایل معتبر نیست');}
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ── Render Helpers ─────────────────────────────────────────────────
+function el(tag,attrs,children){
+  var e=document.createElement(tag);
+  if(attrs)Object.keys(attrs).forEach(function(k){
+    if(k==='className')e.className=attrs[k];
+    else if(k==='style')Object.assign(e.style,attrs[k]);
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),attrs[k]);
+    else e.setAttribute(k,attrs[k]);
+  });
+  if(children)children.forEach(function(c){if(c!=null){e.appendChild(typeof c==='string'?document.createTextNode(c):c);}});
+  return e;
+}
+function div(cls,children){return el('div',{className:cls},children);}
+function span(cls,text){var s=document.createElement('span');s.className=cls;s.textContent=text;return s;}
+function btn(cls,text,onClick){var b=el('button',{className:cls,onClick:onClick});b.textContent=text;return b;}
+
+// ── Render Views ───────────────────────────────────────────────────
+function renderList(){
+  var leads=state.filter==='all'?state.leads:state.leads.filter(function(l){return l.status===state.filter;});
+  var total=state.leads.length;
+  var won=state.leads.filter(function(l){return l.status==='won';}).length;
+  var followup=state.leads.filter(function(l){return l.status==='followup';}).length;
+
+  var notifBanner=null;
+  if('Notification' in window && Notification.permission==='default'){
+    var bannerDiv=el('div',{className:'notif-banner'},[
+      document.createTextNode('برای یادآوری، دسترسی نوتیفیکیشن بده'),
+      btn('','فعال کن',function(){requestNotifPerm();})
+    ]);
+    notifBanner=bannerDiv;
+  }
+
+  // stats
+  var stats=div('stats-row',[
+    div('stat-box stat-purple',[el('div',{className:'stat-num'},[''+total]),el('div',{className:'stat-lbl'},['کل لیدها'])]),
+    div('stat-box stat-green',[el('div',{className:'stat-num'},[''+won]),el('div',{className:'stat-lbl'},['موفق'])]),
+    div('stat-box stat-yellow',[el('div',{className:'stat-num'},[''+followup]),el('div',{className:'stat-lbl'},['پیگیری'])])
+  ]);
+
+  // filter
+  var filters=div('filter-bar',[]);
+  var allChip=el('button',{className:'chip'+(state.filter==='all'?' active-all':''),onClick:function(){state.filter='all';render();}},[]);
+  allChip.textContent='همه';
+  filters.appendChild(allChip);
+  Object.keys(STATUS).forEach(function(k){
+    var c=el('button',{className:'chip'+(state.filter===k?' active-'+k:''),onClick:(function(key){return function(){state.filter=key;render();};})(k)},[]);
+    c.textContent=STATUS[k].label;
+    filters.appendChild(c);
+  });
+
+  // cards
+  var list=div('leads-list',[]);
+  if(leads.length===0){
+    list.appendChild(div('empty',[el('div',{className:'empty-icon'},['📋']),document.createTextNode('هنوز لیدی ثبت نشده')]));
+  } else {
+    leads.forEach(function(lead){
+      var card=div('lead-card '+STATUS[lead.status].card,[]);
+      // top row
+      var top=div('card-top',[
+        div('',[
+          el('div',{className:'card-name'},[lead.name]),
+          el('div',{className:'card-phone'},[lead.phone])
+        ]),
+        span(STATUS[lead.status].badge,STATUS[lead.status].label)
+      ]);
+      card.appendChild(top);
+      // meta row
+      var meta=div('card-meta',[]);
+      var created=el('span',{},[document.createTextNode('📆 '+formatJalaliShort(lead.createdAt))]);
+      meta.appendChild(created);
+      if(lead.reminder){
+        var diff=getReminderDiff(lead.reminder);
+        var remSpan=el('span',{className:'reminder-tag'+(diff.overdue?' overdue':'')},[document.createTextNode(diff.text+' · '+formatJalaliShort(lead.reminder))]);
+        meta.appendChild(remSpan);
+      }
+      if(lead.notes&&lead.notes.length>0){
+        meta.appendChild(el('span',{className:'note-count'},[document.createTextNode('🗒 '+lead.notes.length+' یادداشت')]));
+      }
+      card.appendChild(meta);
+      card.addEventListener('click',function(){state.selectedId=lead.id;state.view='detail';render();});
+      list.appendChild(card);
+    });
+  }
+
+  var header=div('header',[
+    div('',[el('div',{className:'logo'},['WDESIGN']),el('div',{className:'page-title'},['لیدها'])]),
+    div('header-btns',[
+      btn('icon-btn','⚙',function(){state.view='settings';render();}),
+      btn('add-btn','+',function(){state.view='add';render();})
+    ])
+  ]);
+
+  var frag=document.createDocumentFragment();
+  frag.appendChild(header);
+  if(notifBanner)frag.appendChild(notifBanner);
+  frag.appendChild(stats);
+  frag.appendChild(filters);
+  frag.appendChild(list);
+  return frag;
+}
+
+function renderAdd(){
+  var f=state.form;
+  var page=div('page',[]);
+  page.appendChild(btn('back-btn','← برگشت',function(){state.view='list';render();}));
+  page.appendChild(el('div',{className:'page-heading'},['لید جدید']));
+
+  // name
+  page.appendChild(el('label',{className:'field-label'},['نام مشتری']));
+  var nameInp=el('input',{className:'field-input',type:'text',placeholder:'مثلاً: علی رضایی',value:f.name,onInput:function(e){state.form.name=e.target.value;}});
+  page.appendChild(nameInp);
+
+  // phone
+  page.appendChild(el('label',{className:'field-label'},['شماره تلفن']));
+  var phoneInp=el('input',{className:'field-input ltr',type:'tel',placeholder:'09...',value:f.phone,onInput:function(e){state.form.phone=e.target.value;}});
+  page.appendChild(phoneInp);
+
+  // status
+  page.appendChild(el('label',{className:'field-label'},['وضعیت']));
+  var sgrid=div('status-grid',[]);
+  Object.keys(STATUS).forEach(function(k){
+    var b=el('button',{className:'status-opt'+(f.status===k?' '+STATUS[k].sel:''),onClick:(function(key){return function(){state.form.status=key;render();setTimeout(function(){document.querySelector('.field-input[type=text]')&&document.querySelector('.field-input[type=text]').focus();},0);};})(k)},[]);
+    b.textContent=STATUS[k].label;
+    sgrid.appendChild(b);
+  });
+  page.appendChild(sgrid);
+
+  // note
+  page.appendChild(el('label',{className:'field-label'},['یادداشت اولیه (اختیاری)']));
+  var noteTA=el('textarea',{className:'field-input',placeholder:'خلاصه مشاوره...',onInput:function(e){state.form.note=e.target.value;}});
+  noteTA.value=f.note;
+  page.appendChild(noteTA);
+
+  // reminder
+  page.appendChild(el('label',{className:'field-label'},['یادآوری پیگیری (اختیاری)']));
+  var remInp=el('input',{className:'field-input ltr',type:'datetime-local',value:f.reminder,onChange:function(e){state.form.reminder=e.target.value;}});
+  remInp.style.colorScheme='dark';
+  page.appendChild(remInp);
+
+  page.appendChild(btn('submit-btn','ثبت لید',addLead));
+  return page;
+}
+
+function renderDetail(){
+  var lead=getLead(state.selectedId);
+  if(!lead){state.view='list';render();return document.createDocumentFragment();}
+
+  var page=div('page',[]);
+  page.appendChild(btn('back-btn','← برگشت',function(){state.view='list';render();}));
+  page.appendChild(el('div',{className:'page-heading'},[lead.name]));
+  var phoneD=el('div',{className:'card-phone',style:{fontSize:'13px',marginBottom:'18px',marginTop:'-14px'}},[lead.phone]);
+  page.appendChild(phoneD);
+
+  // status
+  page.appendChild(el('div',{className:'section-label'},['وضعیت']));
+  var sgrid=div('status-grid',[]);
+  Object.keys(STATUS).forEach(function(k){
+    var b=el('button',{className:'status-opt'+(lead.status===k?' '+STATUS[k].sel:''),onClick:(function(key,lid){return function(){updateStatus(lid,key);};})(k,lead.id)},[]);
+    b.textContent=STATUS[k].label;
+    sgrid.appendChild(b);
+  });
+  page.appendChild(sgrid);
+
+  page.appendChild(el('div',{className:'divider'},[]));
+
+  // reminder
+  page.appendChild(el('div',{className:'section-label'},['یادآوری پیگیری']));
+  var remInp=el('input',{className:'field-input ltr',type:'datetime-local',value:lead.reminder?lead.reminder.slice(0,16):'',onChange:(function(lid){return function(e){setReminder(lid,e.target.value);};})(lead.id)});
+  remInp.style.colorScheme='dark';
+  page.appendChild(remInp);
+  if(lead.reminder){
+    var diff=getReminderDiff(lead.reminder);
+    var ri=el('div',{className:'reminder-info'+(diff.overdue?' overdue':'')},[
+      document.createTextNode(diff.text+' · '+formatJalaliDate(lead.reminder))
+    ]);
+    page.appendChild(ri);
+  }
+
+  // schedule notification button
+  if('Notification' in window && lead.reminder && !lead.reminderFired){
+    var nb=btn('notif-btn','🔔 ثبت یادآوری در مرورگر',function(){
+      requestNotifPerm(function(p){if(p==='granted')scheduleNotif(lead);});
+    });
+    page.appendChild(nb);
+  }
+
+  page.appendChild(el('div',{className:'divider'},[]));
+
+  // notes
+  page.appendChild(el('div',{className:'section-label'},['یادداشت‌ها']));
+  var nl=div('notes-list',[]);
+  if(!lead.notes||lead.notes.length===0){
+    nl.appendChild(el('div',{style:{color:'#444',fontSize:'13px',marginBottom:'10px'}},['یادداشتی نیست']));
+  } else {
+    lead.notes.forEach(function(n){
+      var ni=div('note-item',[
+        document.createTextNode(n.text),
+        el('div',{className:'note-time'},[formatJalaliDate(n.time)])
+      ]);
+      nl.appendChild(ni);
+    });
+  }
+  page.appendChild(nl);
+  var noteRow=div('note-row',[]);
+  var ni=el('input',{className:'note-inp',type:'text',placeholder:'یادداشت جدید...',onInput:function(e){state.noteInput=e.target.value;}});
+  ni.value=state.noteInput;
+  var sb=btn('send-btn','↑',(function(lid){return function(){addNote(lid);};})(lead.id));
+  noteRow.appendChild(ni);
+  noteRow.appendChild(sb);
+  page.appendChild(noteRow);
+
+  // date created
+  page.appendChild(el('div',{style:{fontSize:'11px',color:'#444',marginTop:'16px',textAlign:'center'}},[
+    'ثبت شده: '+formatJalaliDate(lead.createdAt)
+  ]));
+
+  page.appendChild(btn('delete-btn','🗑 حذف این لید',(function(lid){return function(){deleteLead(lid);};})(lead.id)));
+  return page;
+}
+
+// ── Main Render ────────────────────────────────────────────────────
+function renderSettings(){
+  var page=div('page',[]);
+  page.appendChild(btn('back-btn','← برگشت',function(){state.view='list';render();}));
+  page.appendChild(el('div',{className:'page-heading'},['پشتیبان‌گیری و خروجی']));
+
+  var exportLabel=el('div',{className:'section-label'},['خروجی / Export']);
+  page.appendChild(exportLabel);
+
+  var exportBtns=[
+    {icon:'💾',label:'Backup JSON (برای import)',fn:exportJSON,cls:'exp-btn exp-json'},
+    {icon:'📊',label:'Excel / CSV',fn:exportCSV,cls:'exp-btn exp-csv'},
+    {icon:'🟣',label:'Obsidian Markdown',fn:exportObsidian,cls:'exp-btn exp-obs'},
+    {icon:'📝',label:'Apple Notes (متن ساده)',fn:exportAppleNotes,cls:'exp-btn exp-note'},
+  ];
+  exportBtns.forEach(function(b){
+    var eb=el('button',{className:b.cls,onClick:b.fn},[]);
+    eb.innerHTML='<span style="font-size:18px">'+b.icon+'</span><span>'+b.label+'</span>';
+    page.appendChild(eb);
+  });
+
+  page.appendChild(el('div',{className:'divider'},[]));
+
+  var importLabel=el('div',{className:'section-label'},['بازگردانی / Import']);
+  page.appendChild(importLabel);
+  var ib=el('button',{className:'exp-btn exp-import',onClick:importJSON},[]);
+  ib.innerHTML='<span style="font-size:18px">📥</span><span>Import از فایل JSON</span>';
+  page.appendChild(ib);
+
+  page.appendChild(el('div',{style:{fontSize:'11px',color:'#444',marginTop:'16px',textAlign:'center',lineHeight:'1.6'}},['برای آپدیت اپ، اول Backup JSON بگیر\nبعد از نصب مجدد، Import کن']));
+  return page;
+}
+
+function render(){
+  var app=document.getElementById('app');
+  while(app.firstChild)app.removeChild(app.firstChild);
+  if(state.view==='list')app.appendChild(renderList());
+  else if(state.view==='add')app.appendChild(renderAdd());
+  else if(state.view==='detail')app.appendChild(renderDetail());
+  else if(state.view==='settings')app.appendChild(renderSettings());
+}
+
+render();
+
+// periodic reminder check (fallback)
+setInterval(function(){
+  state.leads.forEach(function(l){
+    if(l.reminder&&!l.reminderFired){
+      if(new Date(l.reminder)<=new Date()){
+        if(Notification.permission==='granted'){
+          new Notification('⏰ Wdesign CRM',{body:'پیگیری: '+l.name+' — '+l.phone,icon:'icon-192.png'});
+        }
+        state.leads=state.leads.map(function(x){return x.id===l.id?Object.assign({},x,{reminderFired:true}):x;});
+        saveLeads(state.leads);
+        render();
+      }
+    }
+  });
+},30000);
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js");}</script>
+</body>
+</html>
