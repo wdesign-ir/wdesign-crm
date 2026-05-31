@@ -329,7 +329,7 @@ function renderList(){
       var top=div('card-top',[
         div('',[
           el('div',{className:'card-name'},[lead.name]),
-          el('div',{className:'card-phone'},[lead.phone])
+          el('a',{href:'tel:'+lead.phone,className:'card-phone',style:{textDecoration:'none'}},[lead.phone])
         ]),
         span(STATUS[lead.status].badge,STATUS[lead.status].label)
       ]);
@@ -415,7 +415,8 @@ function renderDetail(){
   var page=div('page',[]);
   page.appendChild(btn('back-btn','← برگشت',function(){state.view='list';render();}));
   page.appendChild(el('div',{className:'page-heading'},[lead.name]));
-  var phoneD=el('div',{className:'card-phone',style:{fontSize:'13px',marginBottom:'18px',marginTop:'-14px'}},[lead.phone]);
+  var phoneD=el('a',{href:'tel:'+lead.phone,className:'card-phone',style:{fontSize:'13px',marginBottom:'18px',marginTop:'-14px',textDecoration:'none',display:'block'}},[lead.phone]);
+
   page.appendChild(phoneD);
 
   // status
