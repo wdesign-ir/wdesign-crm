@@ -2,7 +2,7 @@
   "name": "Wdesign CRM",
   "short_name": "W·CRM",
   "description": "مدیریت لیدهای Wdesign",
-  "start_url": "/",
+  "start_url": "/wdesign-crm/",
   "display": "standalone",
   "background_color": "#0d0d14",
   "theme_color": "#7c3aed",
